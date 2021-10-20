@@ -102,8 +102,8 @@ class SyncSolarMan:
         self.init_sensor('dc_voltage_1', 'measurement', 'voltage', 'V',client)
         self.init_sensor('dc_voltage_2', 'measurement', 'voltage', 'V',client)
 
-        self.init_sensor('dc_power_1', 'measurement', 'power', 'Kw',client)
-        self.init_sensor('dc_power_2', 'measurement', 'power', 'kw',client)
+        self.init_sensor('dc_power_1', 'measurement', 'power', 'W',client)
+        self.init_sensor('dc_power_2', 'measurement', 'power', 'W',client)
 
         # client.publish(self.sensor_base_topic+"/sensor/ac_power/state", msg.p_ac(1))
         # client.publish(self.sensor_base_topic+"/status", "online")
