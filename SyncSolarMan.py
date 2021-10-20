@@ -99,8 +99,8 @@ class SyncSolarMan:
         self.init_sensor('dc_current_1', 'measurement', 'current', 'A')
         self.init_sensor('dc_current_2', 'measurement', 'current', 'A')
 
-        self.init_sensor('dc_volage_1', 'measurement', 'voltage', 'V')
-        self.init_sensor('dc_volage_2', 'measurement', 'voltage', 'V')
+        self.init_sensor('dc_voltage_1', 'measurement', 'voltage', 'V')
+        self.init_sensor('dc_voltage_2', 'measurement', 'voltage', 'V')
 
         self.init_sensor('dc_power_1', 'measurement', 'power', 'Kw')
         self.init_sensor('dc_power_2', 'measurement', 'power', 'kw')
