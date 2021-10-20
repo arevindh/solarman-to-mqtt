@@ -1,5 +1,20 @@
 ## Solarman stick logger to mqtt
 
+`git clone https://github.com/arevindh/solarman-to-mqtt`
+
+`cd solarman-to-mqtt`
+
+`cp config.org.cfg config.cfg`
+
+Edit the contents to match your settings
+
+## Install requirements 
+
+pip3 install -r requirements.txt
+
+## Testing
+
+python3 SyncSolarMan.py
 
 ## Create Service 
 
