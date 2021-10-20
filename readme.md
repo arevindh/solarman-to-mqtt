@@ -58,3 +58,9 @@ WantedBy = multi-user.target
 `sudo systemctl status solarman`
 
 `sudo systemctl enable solarman`
+
+
+## To do
+
+- Better handling of offline device
+- Code refactor
