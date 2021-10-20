@@ -53,7 +53,7 @@ class SyncSolarMan:
         self.mqtt_user = self.config.get('mqtt', 'user')
         self.mqtt_password = self.config.get('mqtt', 'password')
 
-    def init_sensor(self, sensor_name, state_class, device_class, unit_of_measurement):
+    def init_sensor(self, sensor_name, state_class, device_class, unit_of_measurement, client):
 
         payload = {
             "unit_of_measurement": unit_of_measurement,
@@ -75,38 +75,41 @@ class SyncSolarMan:
         if state_class != None:
             payload["state_class"] = state_class
 
+        client.publish(self.ha_base_topic +
+                       '/sensor/'+self.sensor_base_topic+'/'+sensor_name+'/config', json.dumps(payload))
+        
+
+    def init_device(self):
+
         client = mqtt.Client("Solar Inverter")
         client.username_pw_set(self.mqtt_user, self.mqtt_password)
         client.connect(self.mqtt_server, int(self.mqtt_port), 60)
 
-        client.publish(self.ha_base_topic +
-                       '/sensor/'+self.sensor_base_topic+'/'+sensor_name+'/config', json.dumps(payload))
-        client.loop(2)
-        client.disconnect()
-
-    def init_device(self):
         # Power
-        self.init_sensor('total_energy', 'total_increasing', 'energy', 'kWh')
-        self.init_sensor('daily_energy', 'total_increasing', 'energy', 'kWh')
-        self.init_sensor('total_hours', 'total_increasing', None, 'h')
+        self.init_sensor('total_energy', 'total_increasing', 'energy', 'kWh',client)
+        self.init_sensor('daily_energy', 'total_increasing', 'energy', 'kWh',client)
+        self.init_sensor('total_hours', 'total_increasing', None, 'h',client)
 
-        self.init_sensor('ac_power', 'measurement', 'power', 'kW')
-        self.init_sensor('ac_frequency', "measurement", None, 'Hz')
-        self.init_sensor('ac_current', 'measurement', 'current', 'A')
-        self.init_sensor('ac_volage', 'measurement', 'voltage', 'V')
+        self.init_sensor('ac_power', 'measurement', 'power', 'kW',client)
+        self.init_sensor('ac_frequency', "measurement", None, 'Hz',client)
+        self.init_sensor('ac_current', 'measurement', 'current', 'A',client)
+        self.init_sensor('ac_volage', 'measurement', 'voltage', 'V',client)
 
         # PV
-        self.init_sensor('dc_current_1', 'measurement', 'current', 'A')
-        self.init_sensor('dc_current_2', 'measurement', 'current', 'A')
+        self.init_sensor('dc_current_1', 'measurement', 'current', 'A',client)
+        self.init_sensor('dc_current_2', 'measurement', 'current', 'A',client)
 
-        self.init_sensor('dc_voltage_1', 'measurement', 'voltage', 'V')
-        self.init_sensor('dc_voltage_2', 'measurement', 'voltage', 'V')
+        self.init_sensor('dc_voltage_1', 'measurement', 'voltage', 'V',client)
+        self.init_sensor('dc_voltage_2', 'measurement', 'voltage', 'V',client)
 
-        self.init_sensor('dc_power_1', 'measurement', 'power', 'Kw')
-        self.init_sensor('dc_power_2', 'measurement', 'power', 'kw')
+        self.init_sensor('dc_power_1', 'measurement', 'power', 'Kw',client)
+        self.init_sensor('dc_power_2', 'measurement', 'power', 'kw',client)
 
         # client.publish(self.sensor_base_topic+"/sensor/ac_power/state", msg.p_ac(1))
         # client.publish(self.sensor_base_topic+"/status", "online")
+
+        client.loop(2)
+        client.disconnect()
 
     def process_message(self, msg):
         
