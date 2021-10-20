@@ -28,6 +28,8 @@ python3 SyncSolarMan.py
 
 ## Create Service 
 
+Change `dietpi` to your username ( `whoami` will provide you with your username )
+
 `sudo nano /etc/systemd/system/solarman.service`
 
 ```
