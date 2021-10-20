@@ -52,3 +52,5 @@ WantedBy = multi-user.target
 `sudo systemctl start solarman`
 
 `sudo systemctl status solarman`
+
+`sudo systemctl enable solarman`
