@@ -189,7 +189,8 @@ class SyncSolarMan:
                 print('Device at {} offline. Waiting 20s before retry . '.format(
                     self.logger_ip))
                 self.set_device_status('offline')
-                exit(1)
+                time.sleep(20)
+                continue
 
             try:
                 logger_socket.sendall(data)
