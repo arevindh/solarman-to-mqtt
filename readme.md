@@ -1,3 +1,11 @@
+## Introduction
+
+Solarman to MQTT a small script to get data from Omnik, Hosola, Goodwe, Solax, Ginlong, Samil, Sofar or Power-One Solar inverter, equipped with a wifi module or connected to a Wi-Fi data logger and push to an mqtt server of your choice.
+
+This script is adapted from  [https://github.com/silvester747/Inverter-Data-Logger](https://github.com/silvester747/Inverter-Data-Logger)
+
+Check the above link to know the list of supported inverters.
+
 ## Solarman stick logger to mqtt
 
 `git clone https://github.com/arevindh/solarman-to-mqtt`
