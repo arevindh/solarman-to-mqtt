@@ -27,7 +27,6 @@ import subprocess
 import platform
 import time
 import datetime
-from InfluxDB import InfluxDB
 
 
 class SyncSolarMan:
@@ -90,11 +89,11 @@ class SyncSolarMan:
         client.connect(self.mqtt_server, int(self.mqtt_port), 60)
 
         # Power
-        self.init_sensor('total_energy', 'total_increasing',
+        self.init_sensor('total_energy', 'total',
                          'energy', 'kWh', client)
-        self.init_sensor('daily_energy', 'increasing',
+        self.init_sensor('daily_energy', 'total_increasing',
                          'energy', 'kWh', client)
-        self.init_sensor('total_hours', 'total_increasing', None, 'h', client)
+        self.init_sensor('total_hours', 'total', None, 'h', client)
 
         self.init_sensor('ac_power', 'measurement', 'power', 'kW', client)
         self.init_sensor('ac_frequency', "measurement", None, 'Hz', client)
