@@ -8,6 +8,14 @@ This script is adapted from  [https://github.com/mcikosos/Inverter-Data-Logger](
 
 Check the above link to know the list of supported inverters.
 
+## Notes
+
+This service should be running on an always on device preferably a Raspberry Pi or a VM.
+
+Wifi Logger needs a static ip inorder to work flawlessly [https://www.pcmag.com/how-to/how-to-set-up-a-static-ip-address](https://www.pcmag.com/how-to/how-to-set-up-a-static-ip-address) 
+
+<img src="https://user-images.githubusercontent.com/693151/138283943-fdee03e0-bf31-4658-9ae8-25576b1819b9.png" data-canonical-src="https://user-images.githubusercontent.com/693151/138283943-fdee03e0-bf31-4658-9ae8-25576b1819b9.png" width="200"  />
+
 ## Solarman stick logger to mqtt
 
 `git clone https://github.com/arevindh/solarman-to-mqtt`
