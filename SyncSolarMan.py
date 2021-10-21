@@ -198,13 +198,13 @@ class SyncSolarMan:
         # exit(1)
 
     def run(self):
-        self.init_device()
         data = InverterLib.createV5RequestFrame(int(self.logger_sn))
         response = []
         last_offline = True
         while (1):
 
             if(last_offline):
+                self.init_device()
                 logger_socket = self.opensocket()
 
             if(not logger_socket or not self.check_device_online(self.logger_ip)):
