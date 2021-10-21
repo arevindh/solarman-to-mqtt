@@ -152,23 +152,6 @@ class SyncSolarMan:
 
         # inf = InfluxDB(self.logger_sn)
         # inf.store(sensors)
-        # self.set_sensor_state(client, 'total_hours', msg.h_total)
-        # self.set_sensor_state(client, 'total_energy', msg.e_total)
-        # self.set_sensor_state(client, 'daily_energy', msg.e_today)
-
-        # self.set_sensor_state(client, 'ac_power', "{:.2f}".format(msg.p_ac(1)))
-        # self.set_sensor_state(client, 'ac_frequency', msg.f_ac(1))
-        # self.set_sensor_state(client, 'ac_current', msg.i_ac(1))
-        # self.set_sensor_state(client, 'ac_volage', msg.v_ac(1))
-
-        # self.set_sensor_state(client, 'dc_power_1', msg.p_pv(1))
-        # self.set_sensor_state(client, 'dc_power_2', msg.p_pv(2))
-
-        # self.set_sensor_state(client, 'dc_voltage_1', msg.v_pv(1))
-        # self.set_sensor_state(client, 'dc_voltage_2', msg.v_pv(2))
-
-        # self.set_sensor_state(client, 'dc_current_1', msg.i_pv(1))
-        # self.set_sensor_state(client, 'dc_current_2', msg.i_pv(2))
 
     def set_sensor_state(self, client, sensor_name, state):
 
