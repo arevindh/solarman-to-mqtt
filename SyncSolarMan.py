@@ -25,7 +25,9 @@ import paho.mqtt.client as mqtt  # pip install paho-mqtt
 import json
 import subprocess
 import platform
-import time, datetime
+import time
+import datetime
+from InfluxDB import InfluxDB
 
 
 class SyncSolarMan:
@@ -90,7 +92,7 @@ class SyncSolarMan:
         # Power
         self.init_sensor('total_energy', 'total_increasing',
                          'energy', 'kWh', client)
-        self.init_sensor('daily_energy', 'total_increasing',
+        self.init_sensor('daily_energy', 'increasing',
                          'energy', 'kWh', client)
         self.init_sensor('total_hours', 'total_increasing', None, 'h', client)
 
@@ -106,8 +108,8 @@ class SyncSolarMan:
         self.init_sensor('dc_voltage_1', 'measurement', 'voltage', 'V', client)
         self.init_sensor('dc_voltage_2', 'measurement', 'voltage', 'V', client)
 
-        self.init_sensor('dc_power_1', 'measurement', 'power', 'W', client)
-        self.init_sensor('dc_power_2', 'measurement', 'power', 'W', client)
+        self.init_sensor('dc_power_1', 'measurement', 'power', 'kW', client)
+        self.init_sensor('dc_power_2', 'measurement', 'power', 'kW', client)
 
         # client.publish(self.sensor_base_topic+"/sensor/ac_power/state", msg.p_ac(1))
         # client.publish(self.sensor_base_topic+"/status", "online")
@@ -123,25 +125,54 @@ class SyncSolarMan:
         client.connect(self.mqtt_server,
                        int(self.mqtt_port), 60)
 
-        self.set_sensor_state(client, 'total_hours', msg.h_total)
-        self.set_sensor_state(client, 'total_energy', msg.e_total)
-        self.set_sensor_state(client, 'daily_energy', msg.e_today)
+        sensors = [
+            {"name": "total_hours", "value": msg.h_total},
+            {"name": "total_energy", "value": msg.e_total},
+            {"name": "daily_energy", "value": msg.e_today},
 
-        self.set_sensor_state(client, 'ac_power', "{:.2f}".format(msg.p_ac(1)))
-        self.set_sensor_state(client, 'ac_frequency', msg.f_ac(1))
-        self.set_sensor_state(client, 'ac_current', msg.i_ac(1))
-        self.set_sensor_state(client, 'ac_volage', msg.v_ac(1))
+            {"name": "ac_power", "value": "{:.2f}".format(msg.p_ac(1))},
+            {"name": "ac_frequency", "value": msg.h_total},
+            {"name": "ac_current", "value": msg.i_ac(1)},
+            {"name": "ac_volage", "value": msg.v_ac(1)},
 
-        self.set_sensor_state(client, 'dc_power_1', msg.p_pv(1))
-        self.set_sensor_state(client, 'dc_power_2', msg.p_pv(2))
+            {"name": "dc_power_1", "value": msg.p_pv(1)},
+            {"name": "dc_power_2", "value": msg.p_pv(2)},
 
-        self.set_sensor_state(client, 'dc_voltage_1', msg.v_pv(1))
-        self.set_sensor_state(client, 'dc_voltage_2', msg.v_pv(2))
+            {"name": "dc_voltage_1", "value": msg.v_pv(1)},
+            {"name": "dc_voltage_2", "value": msg.v_pv(2)},
 
-        self.set_sensor_state(client, 'dc_current_1', msg.i_pv(1))
-        self.set_sensor_state(client, 'dc_current_2', msg.i_pv(2))
+            {"name": "dc_current_1", "value": msg.i_pv(1)},
+            {"name": "dc_current_2", "value": msg.i_pv(2)}
+        ]
+        ## Should not be zero e_today and h_total
+        if float(msg.e_today) != 0.0 and float(msg.h_total) != 0.0:
+            for sensor in sensors:
+                self.set_sensor_state(client, sensor['name'], sensor['value'])
+        else:
+            self.logMessage('Invalid value for total value')
+
+        # inf = InfluxDB(self.logger_sn)
+        # inf.store(sensors)
+        # self.set_sensor_state(client, 'total_hours', msg.h_total)
+        # self.set_sensor_state(client, 'total_energy', msg.e_total)
+        # self.set_sensor_state(client, 'daily_energy', msg.e_today)
+
+        # self.set_sensor_state(client, 'ac_power', "{:.2f}".format(msg.p_ac(1)))
+        # self.set_sensor_state(client, 'ac_frequency', msg.f_ac(1))
+        # self.set_sensor_state(client, 'ac_current', msg.i_ac(1))
+        # self.set_sensor_state(client, 'ac_volage', msg.v_ac(1))
+
+        # self.set_sensor_state(client, 'dc_power_1', msg.p_pv(1))
+        # self.set_sensor_state(client, 'dc_power_2', msg.p_pv(2))
+
+        # self.set_sensor_state(client, 'dc_voltage_1', msg.v_pv(1))
+        # self.set_sensor_state(client, 'dc_voltage_2', msg.v_pv(2))
+
+        # self.set_sensor_state(client, 'dc_current_1', msg.i_pv(1))
+        # self.set_sensor_state(client, 'dc_current_2', msg.i_pv(2))
 
     def set_sensor_state(self, client, sensor_name, state):
+
         client.publish(self.sensor_base_topic+"/sensor/" +
                        sensor_name+"/state", state)
         client.publish(self.sensor_base_topic+"/status", "online")
@@ -166,8 +197,8 @@ class SyncSolarMan:
         ts = time.time()
         st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
         file = open('logs/run.log', 'a+')
-        file.write('{} : {}\n'.format(st,msg))
-        file.close();
+        file.write('{} : {}\n'.format(st, msg))
+        file.close()
 
     def opensocket(self):
         for res in socket.getaddrinfo(self.logger_ip, self.logger_port, socket.AF_INET, socket.SOCK_STREAM):
@@ -233,7 +264,7 @@ class SyncSolarMan:
             self.logMessage("Reading data from logger")
             self.set_device_status('online')
             self.process_message(msg)
-            time.sleep(5)
+            time.sleep(10)
 
 
 if __name__ == "__main__":
