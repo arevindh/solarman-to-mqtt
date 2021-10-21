@@ -4,7 +4,7 @@ Solarman to MQTT a small script to get data from Omnik, Hosola, Goodwe, Solax, G
 
 MQTT topic optimized for Home Assistant [autodiscovery](https://www.home-assistant.io/docs/mqtt/discovery/).
 
-This script is adapted from  [https://github.com/silvester747/Inverter-Data-Logger](https://github.com/silvester747/Inverter-Data-Logger)
+This script is adapted from  [https://github.com/mcikosos/Inverter-Data-Logger](https://github.com/mcikosos/Inverter-Data-Logger)
 
 Check the above link to know the list of supported inverters.
 
