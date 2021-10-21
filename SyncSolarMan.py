@@ -23,6 +23,10 @@ import InverterLib  # Import the library
 from datetime import datetime
 import paho.mqtt.client as mqtt  # pip install paho-mqtt
 import json
+import subprocess
+import platform
+import time
+import datetime
 
 
 class SyncSolarMan:
@@ -77,7 +81,6 @@ class SyncSolarMan:
 
         client.publish(self.ha_base_topic +
                        '/sensor/'+self.sensor_base_topic+'/'+sensor_name+'/config', json.dumps(payload))
-        
 
     def init_device(self):
 
@@ -86,97 +89,137 @@ class SyncSolarMan:
         client.connect(self.mqtt_server, int(self.mqtt_port), 60)
 
         # Power
-        self.init_sensor('total_energy', 'total_increasing', 'energy', 'kWh',client)
-        self.init_sensor('daily_energy', 'total_increasing', 'energy', 'kWh',client)
-        self.init_sensor('total_hours', 'total_increasing', None, 'h',client)
+        self.init_sensor('total_energy', 'total',
+                         'energy', 'kWh', client)
+        self.init_sensor('daily_energy', 'total_increasing',
+                         'energy', 'kWh', client)
+        self.init_sensor('total_hours', 'total', None, 'h', client)
 
-        self.init_sensor('ac_power', 'measurement', 'power', 'kW',client)
-        self.init_sensor('ac_frequency', "measurement", None, 'Hz',client)
-        self.init_sensor('ac_current', 'measurement', 'current', 'A',client)
-        self.init_sensor('ac_volage', 'measurement', 'voltage', 'V',client)
+        self.init_sensor('ac_power', 'measurement', 'power', 'kW', client)
+        self.init_sensor('ac_frequency', "measurement", None, 'Hz', client)
+        self.init_sensor('ac_current', 'measurement', 'current', 'A', client)
+        self.init_sensor('ac_volage', 'measurement', 'voltage', 'V', client)
 
         # PV
-        self.init_sensor('dc_current_1', 'measurement', 'current', 'A',client)
-        self.init_sensor('dc_current_2', 'measurement', 'current', 'A',client)
+        self.init_sensor('dc_current_1', 'measurement', 'current', 'A', client)
+        self.init_sensor('dc_current_2', 'measurement', 'current', 'A', client)
 
-        self.init_sensor('dc_voltage_1', 'measurement', 'voltage', 'V',client)
-        self.init_sensor('dc_voltage_2', 'measurement', 'voltage', 'V',client)
+        self.init_sensor('dc_voltage_1', 'measurement', 'voltage', 'V', client)
+        self.init_sensor('dc_voltage_2', 'measurement', 'voltage', 'V', client)
 
-        self.init_sensor('dc_power_1', 'measurement', 'power', 'W',client)
-        self.init_sensor('dc_power_2', 'measurement', 'power', 'W',client)
-
-        # client.publish(self.sensor_base_topic+"/sensor/ac_power/state", msg.p_ac(1))
-        # client.publish(self.sensor_base_topic+"/status", "online")
+        self.init_sensor('dc_power_1', 'measurement', 'power', 'kW', client)
+        self.init_sensor('dc_power_2', 'measurement', 'power', 'kW', client)
 
         client.loop(2)
         client.disconnect()
 
     def process_message(self, msg):
-        
+
         client = mqtt.Client("Solar Inverter")
         client.username_pw_set(self.mqtt_user,
                                self.mqtt_password)
         client.connect(self.mqtt_server,
                        int(self.mqtt_port), 60)
 
-        self.set_sensor_state(client, 'total_hours', msg.h_total)
-        self.set_sensor_state(client, 'total_energy', msg.e_total)
-        self.set_sensor_state(client, 'daily_energy', msg.e_today)
+        sensors = [
+            {"name": "total_hours", "value": msg.h_total},
+            {"name": "total_energy", "value": msg.e_total},
+            {"name": "daily_energy", "value": msg.e_today},
 
-        self.set_sensor_state(client, 'ac_power', "{:.2f}".format(msg.p_ac(1)))
-        self.set_sensor_state(client, 'ac_frequency', msg.f_ac(1))
-        self.set_sensor_state(client, 'ac_current', msg.i_ac(1))
-        self.set_sensor_state(client, 'ac_volage', msg.v_ac(1))
+            {"name": "ac_power", "value": "{:.2f}".format(msg.p_ac(1))},
+            {"name": "ac_frequency", "value": msg.h_total},
+            {"name": "ac_current", "value": msg.i_ac(1)},
+            {"name": "ac_volage", "value": msg.v_ac(1)},
 
-        self.set_sensor_state(client, 'dc_power_1', msg.v_pv(1))
-        self.set_sensor_state(client, 'dc_power_2', msg.v_pv(2))
+            {"name": "dc_power_1", "value": msg.p_pv(1)},
+            {"name": "dc_power_2", "value": msg.p_pv(2)},
 
-        self.set_sensor_state(client, 'dc_voltage_1', msg.v_pv(1))
-        self.set_sensor_state(client, 'dc_voltage_2', msg.v_pv(2))
+            {"name": "dc_voltage_1", "value": msg.v_pv(1)},
+            {"name": "dc_voltage_2", "value": msg.v_pv(2)},
 
-        self.set_sensor_state(client, 'dc_current_1', msg.i_pv(1))
-        self.set_sensor_state(client, 'dc_current_2', msg.i_pv(2))
+            {"name": "dc_current_1", "value": msg.i_pv(1)},
+            {"name": "dc_current_2", "value": msg.i_pv(2)}
+        ]
+        ## Should not be zero e_today and h_total
+        if float(msg.e_today) != 0.0 and float(msg.h_total) != 0.0:
+            for sensor in sensors:
+                self.set_sensor_state(client, sensor['name'], sensor['value'])
+        else:
+            self.logMessage('Invalid value for total value')
 
     def set_sensor_state(self, client, sensor_name, state):
+
         client.publish(self.sensor_base_topic+"/sensor/" +
                        sensor_name+"/state", state)
         client.publish(self.sensor_base_topic+"/status", "online")
 
-    def run(self):
+    def set_device_status(self, status):
+        client = mqtt.Client("Solar Inverter")
+        client.username_pw_set(self.mqtt_user,
+                               self.mqtt_password)
+        client.connect(self.mqtt_server,
+                       int(self.mqtt_port), 60)
+        client.publish(self.sensor_base_topic+"/status", status)
 
-        self.init_device()
-        timeout = 3
+    def check_device_online(self, sHost):
+        try:
+            output = subprocess.check_output("ping -{} 1 {}".format(
+                'n' if platform.system().lower() == "windows" else 'c', sHost), shell=True)
+        except Exception as e:
+            return False
+        return True
 
-        print('connecting to {0} port {1}'.format(
-            self.logger_ip, self.logger_port))
+    def logMessage(self, msg):
+        ts = time.time()
+        st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+        file = open('logs/run.log', 'a+')
+        file.write('{} : {}\n'.format(st, msg))
+        file.close()
 
+    def opensocket(self):
         for res in socket.getaddrinfo(self.logger_ip, self.logger_port, socket.AF_INET, socket.SOCK_STREAM):
             family, socktype, proto, canonname, sockadress = res
             try:
-                print('connecting to {0} port {1}'.format(
+                self.logMessage('connecting to {0} port {1}'.format(
                     self.logger_ip, self.logger_port))
                 logger_socket = socket.socket(family, socktype, proto)
-                logger_socket.settimeout(timeout)
+                logger_socket.settimeout(10)
                 logger_socket.connect(sockadress)
+                return logger_socket
             except socket.error as msg:
-                print('Could not open socket')
-                next = True
-                break
+                self.logMessage('Could not open socket, aborting ')
+        # self.set_device_status('offline')
+        # exit(1)
 
+    def run(self):
         data = InverterLib.createV5RequestFrame(int(self.logger_sn))
         response = []
-        okflag = False
-        while (not okflag):
+        last_offline = True
+        while (1):
+
+            if(last_offline):
+                self.init_device()
+                logger_socket = self.opensocket()
+
+            if(not logger_socket or not self.check_device_online(self.logger_ip)):
+                self.logMessage('Device at {} offline. Waiting 20s before retry . '.format(
+                    self.logger_ip))
+                self.set_device_status('offline')
+                time.sleep(20)
+                last_offline = True
+                continue
+
             try:
                 logger_socket.sendall(data)
             except socket.error as e:
-                print('Connection error IP: {0} and SN {1}, trying next logger.'.format(
+                self.logMessage('Connection error IP: {0} and SN {1}, trying next logger.'.format(
                     self.logger_ip, self.logger_port))
+                last_offline = True
                 continue
             try:
                 response = logger_socket.recv(1024)
             except socket.timeout as e:
-                print('Timeout connecting to logger with IP: {0} and SN {1}, trying next logger.'.format(
+                self.logMessage('Timeout connecting to logger with IP: {0} and SN {1}, trying next logger.'.format(
                     self.logger_ip, self.logger_port))
                 continue
 
@@ -184,21 +227,20 @@ class SyncSolarMan:
                 msg = InverterMsg.InverterMsg(response, self.logger)
 
             if (msg.msg)[:9] == 'DATA SEND':
-                self.logger.debug("Exit Status: {0}".format(msg.msg))
+                self.logMessage("Exit Status: {0}".format(msg.msg))
                 logger_socket.close()
                 continue
 
             if (msg.msg)[:11] == 'NO INVERTER':
-                self.logger.debug(
+                self.logMessage(
                     "Inverter(s) are in sleep mode: {0} received".format(msg.msg))
                 logger_socket.close()
                 continue
 
-            print("Reading data from logger")
-
+            self.logMessage("Reading data from logger")
+            self.set_device_status('online')
             self.process_message(msg)
-
-            time.sleep(5)
+            time.sleep(10)
 
 
 if __name__ == "__main__":
