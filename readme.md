@@ -20,11 +20,11 @@ Edit the contents to match your settings
 
 ## Install requirements 
 
-pip3 install -r requirements.txt
+`pip3 install -r requirements.txt`
 
 ## Testing
 
-python3 SyncSolarMan.py
+`python3 SyncSolarMan.py`
 
 ## Create Service 
 
