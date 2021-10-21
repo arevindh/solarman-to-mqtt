@@ -132,8 +132,8 @@ class SyncSolarMan:
         self.set_sensor_state(client, 'ac_current', msg.i_ac(1))
         self.set_sensor_state(client, 'ac_volage', msg.v_ac(1))
 
-        self.set_sensor_state(client, 'dc_power_1', msg.v_pv(1))
-        self.set_sensor_state(client, 'dc_power_2', msg.v_pv(2))
+        self.set_sensor_state(client, 'dc_power_1', msg.p_pv(1))
+        self.set_sensor_state(client, 'dc_power_2', msg.p_pv(2))
 
         self.set_sensor_state(client, 'dc_voltage_1', msg.v_pv(1))
         self.set_sensor_state(client, 'dc_voltage_2', msg.v_pv(2))
