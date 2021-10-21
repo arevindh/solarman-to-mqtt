@@ -1,5 +1,8 @@
 ## Introduction
 
+![ha-dash](https://user-images.githubusercontent.com/693151/138284713-34f78fee-0b73-47e0-8f42-23bc204a9e5d.JPG)
+
+
 Solarman to MQTT a small script to get data from Omnik, Hosola, Goodwe, Solax, Ginlong, Samil, Sofar or Power-One Solar inverter, equipped with a wifi module or connected to a Wi-Fi data logger and push to an mqtt server of your choice.
 
 MQTT topic optimized for Home Assistant [autodiscovery](https://www.home-assistant.io/docs/mqtt/discovery/).
