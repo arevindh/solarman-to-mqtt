@@ -110,9 +110,6 @@ class SyncSolarMan:
         self.init_sensor('dc_power_1', 'measurement', 'power', 'kW', client)
         self.init_sensor('dc_power_2', 'measurement', 'power', 'kW', client)
 
-        # client.publish(self.sensor_base_topic+"/sensor/ac_power/state", msg.p_ac(1))
-        # client.publish(self.sensor_base_topic+"/status", "online")
-
         client.loop(2)
         client.disconnect()
 
@@ -149,9 +146,6 @@ class SyncSolarMan:
                 self.set_sensor_state(client, sensor['name'], sensor['value'])
         else:
             self.logMessage('Invalid value for total value')
-
-        # inf = InfluxDB(self.logger_sn)
-        # inf.store(sensors)
 
     def set_sensor_state(self, client, sensor_name, state):
 
