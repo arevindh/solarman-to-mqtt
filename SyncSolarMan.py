@@ -123,8 +123,9 @@ class SyncSolarMan:
                 max_value = float(self.config.get(
                     'logger', 'inverter_dc_current')) * 1.20
             elif 'dc_power' in name:
-                max_value = (float(self.config.get('logger', 'inverter_dc_power')) * 1.20) / 1000
-            
+                max_value = (float(self.config.get('logger', 'inverter_dc_power_per_string')) * 1.20) / 1000
+            elif 'ac_power' in name:
+                max_value = (float(self.config.get('logger', 'inverter_ac_power')) * 1.20) / 1000
             # self.logMessage('{} Max = {}'.format(name,max_value))
             if max_value >= float(value):
                 return True
