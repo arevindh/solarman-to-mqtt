@@ -1,2 +1,2 @@
-mqtt-paho
+paho-mqtt
 six

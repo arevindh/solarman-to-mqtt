@@ -113,6 +113,27 @@ class SyncSolarMan:
         client.loop(2)
         client.disconnect()
 
+    def value_validator(self, name, value):
+        try:
+            max_value = float(value)
+            if 'dc_voltage' in name:
+                max_value = float(self.config.get(
+                    'logger', 'inverter_dc_voltage')) * 1.20
+            elif 'dc_current' in name:
+                max_value = float(self.config.get(
+                    'logger', 'inverter_dc_current')) * 1.20
+            elif 'dc_power' in name:
+                max_value = (float(self.config.get('logger', 'inverter_dc_power_per_string')) * 1.20) / 1000
+            elif 'ac_power' in name:
+                max_value = (float(self.config.get('logger', 'inverter_ac_power')) * 1.20) / 1000
+                self.logMessage('ac power {}'.format(max_value))
+            # self.logMessage('{} Max = {}'.format(name,max_value))
+            if max_value >= float(value):
+                return True
+            return False
+        except:
+            return True
+        
     def process_message(self, msg):
 
         client = mqtt.Client("Solar Inverter")
@@ -127,7 +148,7 @@ class SyncSolarMan:
             {"name": "daily_energy", "value": msg.e_today},
 
             {"name": "ac_power", "value": "{:.2f}".format(msg.p_ac(1))},
-            {"name": "ac_frequency", "value": msg.h_total},
+            {"name": "ac_frequency", "value": msg.f_ac(1)},
             {"name": "ac_current", "value": msg.i_ac(1)},
             {"name": "ac_volage", "value": msg.v_ac(1)},
 
@@ -140,10 +161,13 @@ class SyncSolarMan:
             {"name": "dc_current_1", "value": msg.i_pv(1)},
             {"name": "dc_current_2", "value": msg.i_pv(2)}
         ]
-        ## Should not be zero e_today and h_total
+
+        # Should not be zero e_today and h_total
         if float(msg.e_today) != 0.0 and float(msg.h_total) != 0.0:
             for sensor in sensors:
-                self.set_sensor_state(client, sensor['name'], sensor['value'])
+                if self.value_validator(sensor['name'], sensor['value']):
+                    self.set_sensor_state(client, sensor['name'], sensor['value'])
+                    
         else:
             self.logMessage('Invalid value for total value')
 
@@ -163,7 +187,7 @@ class SyncSolarMan:
 
     def check_device_online(self, sHost):
         try:
-            output = subprocess.check_output("ping -{} 1 {}".format(
+            output = subprocess.check_output("ping -4 -{} 1 {}".format(
                 'n' if platform.system().lower() == "windows" else 'c', sHost), shell=True)
         except Exception as e:
             return False
