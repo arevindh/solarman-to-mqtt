@@ -187,7 +187,7 @@ class SyncSolarMan:
 
     def check_device_online(self, sHost):
         try:
-            output = subprocess.check_output("ping -{} 1 {}".format(
+            output = subprocess.check_output("ping -4 -{} 1 {}".format(
                 'n' if platform.system().lower() == "windows" else 'c', sHost), shell=True)
         except Exception as e:
             return False
