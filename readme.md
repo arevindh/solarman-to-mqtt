@@ -8,6 +8,26 @@ This script is adapted from  [https://github.com/silvester747/Inverter-Data-Logg
 
 Check the above link to know the list of supported inverters.
 
+## Docker 
+
+Create `docker-compose.yaml`
+
+```
+version: '3.7'
+services:
+  solarman-to-mqtt:
+    image: arevindh/solarman-to-mqtt
+    container_name: solarman-to-mqtt
+    volumes:
+      - ./config.cfg:/usr/src/app/config.cfg
+      - ./logs:/usr/src/app/logs
+    restart: unless-stopped
+```
+
+create `config.cfg` from template [config.org.cfg](config.org.cfg) in the same folder
+
+`sudo docker-compose up -d`
+
 ## Solarman stick logger to mqtt
 
 `git clone https://github.com/arevindh/solarman-to-mqtt`
